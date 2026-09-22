@@ -1,0 +1,810 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#090d14">
+<title>Sentra Ambient V7</title>
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#080b12;--panel:#121826;--line:#2c3648;--text:#f5f7fb;
+  --muted:#9ba7b8;--ok:#67e69b;--accent:#4fd8ff;--danger:#ff6b7c;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;min-height:100vh;color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Microsoft JhengHei",sans-serif;
+  background:
+    radial-gradient(circle at 12% 0%,rgba(0,190,255,.15),transparent 30%),
+    radial-gradient(circle at 88% 8%,rgba(150,65,255,.14),transparent 34%),var(--bg);
+}
+.wrap{max-width:860px;margin:auto;padding:20px 14px 50px}
+h1{margin:0 0 5px;font-size:28px}
+h3{margin:0 0 12px}
+.sub{color:var(--muted);line-height:1.5;margin-bottom:14px}
+.card{
+  background:rgba(18,24,38,.94);border:1px solid var(--line);
+  border-radius:22px;padding:17px;margin:13px 0;box-shadow:0 16px 45px rgba(0,0,0,.28)
+}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.spread{justify-content:space-between}
+.status{
+  display:flex;gap:9px;align-items:center;padding:10px 12px;border-radius:13px;
+  border:1px solid var(--line);background:#0b1018
+}
+.dot{width:10px;height:10px;border-radius:50%;background:#677286}
+.dot.on{background:var(--ok);box-shadow:0 0 14px rgba(103,230,155,.75)}
+button{
+  min-height:46px;border-radius:14px;border:1px solid #36425d;background:#182131;
+  color:#fff;padding:0 15px;font-size:15px;font-weight:750
+}
+button:active{transform:scale(.98)}
+.primary{border:none;background:linear-gradient(135deg,#2f63ff,#04b9ff)}
+.mode-toolbar{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  margin:0 0 12px;padding:12px 14px;border:1px solid rgba(79,216,255,.18);
+  border-radius:16px;background:linear-gradient(135deg,rgba(79,216,255,.08),rgba(139,92,255,.07));
+}
+.mode-toolbar .current-label{font-size:11px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.mode-toolbar strong{display:block;margin-top:2px;font-size:16px}
+.mode-toolbar .swipe-hint{font-size:12px;color:#9ddcff;white-space:nowrap}
+.mode-scroll{
+  height:min(54vh,470px);min-height:340px;overflow-y:auto;overscroll-behavior:contain;
+  padding:2px 5px 14px 1px;scroll-behavior:smooth;
+  -webkit-overflow-scrolling:touch;
+  mask-image:linear-gradient(to bottom,transparent 0,#000 16px,#000 calc(100% - 18px),transparent 100%);
+  -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 16px,#000 calc(100% - 18px),transparent 100%);
+}
+.mode-scroll::-webkit-scrollbar{width:5px}
+.mode-scroll::-webkit-scrollbar-track{background:transparent}
+.mode-scroll::-webkit-scrollbar-thumb{background:#344158;border-radius:999px}
+.modegrid{display:grid;grid-template-columns:1fr;gap:8px}
+.modebtn{
+  position:relative;width:100%;text-align:left;min-height:70px;padding:12px 46px 12px 14px;
+  border-radius:17px;border:1px solid rgba(74,88,116,.72);
+  background:linear-gradient(145deg,rgba(27,36,53,.96),rgba(18,24,37,.96));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.025),0 5px 15px rgba(0,0,0,.10);
+  transition:transform .14s ease,border-color .18s ease,background .18s ease,box-shadow .18s ease;
+}
+.modebtn::after{
+  content:"›";position:absolute;right:17px;top:50%;transform:translateY(-52%);
+  font-size:28px;font-weight:300;color:#64718a;transition:.18s ease;
+}
+.modebtn:active{transform:scale(.985)}
+.modebtn.active{
+  border-color:rgba(79,216,255,.78);
+  background:
+    radial-gradient(circle at 8% 50%,rgba(79,216,255,.15),transparent 28%),
+    linear-gradient(135deg,rgba(17,47,66,.98),rgba(31,27,61,.98));
+  box-shadow:0 0 0 1px rgba(79,216,255,.13) inset,0 8px 24px rgba(0,149,255,.09);
+}
+.modebtn.active::after{color:#6ee6ff;transform:translateY(-52%) translateX(2px)}
+.modebtn small{display:block;color:var(--muted);font-weight:500;margin-top:4px;line-height:1.35;font-size:12.5px}
+.sectiontitle{
+  position:sticky;top:0;z-index:3;
+  margin:10px 0 8px;padding:8px 8px 7px;
+  color:#cbd6e7;font-size:11px;font-weight:850;letter-spacing:.12em;
+  background:linear-gradient(to bottom,rgba(18,24,38,.98) 68%,rgba(18,24,38,0));
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+}
+.sectiontitle:first-child{margin-top:0}
+label{display:block;margin:12px 0 7px;font-weight:750}
+input[type="color"]{width:100%;height:70px;border:0;border-radius:16px;background:none;padding:0}
+input[type="range"]{width:100%}
+select,input[type="number"]{
+  width:100%;height:46px;border-radius:12px;border:1px solid var(--line);
+  background:#0a0f18;color:#fff;padding:0 11px;font:inherit
+}
+.value{float:right;color:var(--muted);font-variant-numeric:tabular-nums}
+.small{font-size:13px;color:var(--muted);line-height:1.5}
+.note{
+  padding:10px 12px;border:1px solid var(--line);border-radius:13px;
+  background:#0b1018;color:var(--muted);font-size:13px;line-height:1.5
+}
+.controls{display:none}.controls.show{display:block}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.log{
+  height:190px;overflow:auto;white-space:pre-wrap;border:1px solid #232c3a;background:#07090d;
+  border-radius:14px;padding:11px;font:12px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;color:#cbd5e4
+}
+.pill{
+  display:inline-block;padding:5px 9px;border-radius:999px;background:#0d1d2c;
+  border:1px solid #284a66;color:#9ddcff;font-size:12px
+}
+summary{cursor:pointer}
+@media(max-width:560px){.grid2{grid-template-columns:1fr}.mode-scroll{height:56vh;min-height:360px}.mode-toolbar{padding:11px 12px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Sentra Ambient V7</h1>
+  <div class="sub">28 種燈效｜直向滑動選單｜自動連線｜記住最後模式。</div>
+
+  <div class="card">
+    <div class="row spread">
+      <div class="status"><span id="dot" class="dot"></span><span id="status">初始化中…</span></div>
+      <span class="pill">28 MODES / AUTO RESUME</span>
+    </div>
+    <div class="row" style="margin-top:11px">
+      <button id="connectBtn" class="primary">首次授權 / 手動連線</button>
+      <button id="disconnectBtn">中斷</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>燈光模式</h3>
+
+    <div class="mode-toolbar">
+      <div>
+        <div class="current-label">CURRENT MODE</div>
+        <strong id="selectedModeName">01 絲滑呼吸</strong>
+      </div>
+      <div class="swipe-hint">↕ 上下滑動</div>
+    </div>
+
+    <div class="mode-scroll" id="modeScroll">
+    <div class="sectiontitle">SMOOTH / 氛圍</div>
+    <div class="modegrid">
+      <button class="modebtn" data-mode="breath">01 絲滑呼吸<small>單色 0 → 100 → 0</small></button>
+      <button class="modebtn" data-mode="dual">02 雙色呼吸<small>兩色柔和來回</small></button>
+      <button class="modebtn" data-mode="aurora">03 極光漸變<small>三色連續漸變</small></button>
+      <button class="modebtn" data-mode="rainbow">04 彩虹循環<small>全色相平滑旋轉</small></button>
+      <button class="modebtn" data-mode="rainbowBreath">05 彩虹呼吸<small>彩虹 + 明暗呼吸</small></button>
+      <button class="modebtn" data-mode="colorBounce">06 雙色擺盪<small>A ↔ B 循環</small></button>
+      <button class="modebtn" data-mode="pastel">07 柔和彩霧<small>三色低飽和感漸變</small></button>
+      <button class="modebtn" data-mode="night">08 夜間柔光<small>低亮度慢呼吸</small></button>
+    </div>
+
+    <div class="sectiontitle">PULSE / 節奏</div>
+    <div class="modegrid">
+      <button class="modebtn" data-mode="heartbeat">09 心跳<small>雙脈衝 + 休息</small></button>
+      <button class="modebtn" data-mode="pulse">10 柔和脈衝<small>快速亮起、慢慢淡出</small></button>
+      <button class="modebtn" data-mode="softBlink">11 柔閃<small>比閃爍柔和的明暗切換</small></button>
+      <button class="modebtn" data-mode="strobe">12 頻閃<small>快速亮滅</small></button>
+      <button class="modebtn" data-mode="doubleFlash">13 雙閃<small>閃兩下後停頓</small></button>
+      <button class="modebtn" data-mode="redAlert">14 紅色警戒<small>紅色急促脈衝</small></button>
+      <button class="modebtn" data-mode="police">15 紅藍警示<small>紅藍交替</small></button>
+      <button class="modebtn" data-mode="sos">16 SOS 節奏<small>短短短・長長長・短短短</small></button>
+    </div>
+
+    <div class="sectiontitle">SCENE / 情境</div>
+    <div class="modegrid">
+      <button class="modebtn" data-mode="candle">17 燭光<small>自然不規則微閃</small></button>
+      <button class="modebtn" data-mode="fire">18 火焰<small>紅橘暖色跳動</small></button>
+      <button class="modebtn" data-mode="ocean">19 海洋<small>深藍 ↔ 青色波動</small></button>
+      <button class="modebtn" data-mode="ice">20 冰晶<small>冰藍白柔和閃耀</small></button>
+      <button class="modebtn" data-mode="sunset">21 日落<small>橘紅 ↔ 紫紅漸變</small></button>
+      <button class="modebtn" data-mode="cyber">22 Cyber<small>青色 ↔ 紫色電子感</small></button>
+      <button class="modebtn" data-mode="sparkle">23 星光<small>隨機柔和閃亮</small></button>
+      <button class="modebtn" data-mode="disco">24 Disco<small>高彩度快速換色</small></button>
+      <button class="modebtn" data-mode="party">25 Party<small>彩色節拍感變化</small></button>
+    </div>
+
+    <div class="sectiontitle">RGBIC / 原生空間效果</div>
+    <div class="modegrid">
+      <button class="modebtn" data-mode="runner">26 往返跑馬燈<small>單點 / 單色 Forward ↔ Backward</small></button>
+      <button class="modebtn" data-mode="comet">27 彩虹彗星<small>拖尾往返</small></button>
+      <button class="modebtn" data-mode="curtain">28 開合簾幕<small>由一側展開 / 收回</small></button>
+    </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>模式設定</h3>
+
+    <div id="commonColor" class="controls">
+      <label>主色</label>
+      <input id="color1" type="color" value="#8b5cff">
+    </div>
+
+    <div id="secondColor" class="controls">
+      <label>第二色</label>
+      <input id="color2" type="color" value="#008cff">
+    </div>
+
+    <div id="thirdColor" class="controls">
+      <label>第三色</label>
+      <input id="color3" type="color" value="#00ffd5">
+    </div>
+
+    <div id="periodCtl" class="controls">
+      <label>速度 / 週期 <span id="periodText" class="value">4.5 秒</span></label>
+      <input id="period" type="range" min="0.6" max="10" step="0.1" value="4.5">
+    </div>
+
+    <div id="brightnessCtl" class="controls">
+      <label>最高亮度 <span id="brightnessText" class="value">100%</span></label>
+      <input id="brightness" type="range" min="10" max="100" step="1" value="100">
+    </div>
+
+    <div id="runnerCtl" class="controls">
+      <label>跑馬燈顏色</label>
+      <select id="runnerColor">
+        <option value="red">紅</option>
+        <option value="green">綠</option>
+        <option value="blue">藍</option>
+        <option value="yellow">黃</option>
+        <option value="cyan">青</option>
+        <option value="violet" selected>紫</option>
+        <option value="white">白</option>
+      </select>
+
+      <label>原生速度 <span id="nativeSpeedText" class="value">55</span></label>
+      <input id="nativeSpeed" type="range" min="1" max="100" step="1" value="55">
+
+      <label>跑到端點後反向 <span id="travelText" class="value">2.5 秒</span></label>
+      <input id="travelTime" type="range" min="0.8" max="8" step="0.1" value="2.5">
+
+      <details style="margin-top:12px">
+        <summary class="small">進階：跑馬燈 Effect ID 校正</summary>
+        <div class="grid2" style="margin-top:9px">
+          <div><label>Forward ID</label><input id="forwardId" type="number" min="0" max="255" value="118"></div>
+          <div><label>Backward ID</label><input id="backwardId" type="number" min="0" max="255" value="119"></div>
+        </div>
+      </details>
+
+      <div class="note" style="margin-top:11px">
+        跑馬燈是目前最重要的 RGBIC 測試模式：控制器自己負責「單點移動」，網頁只切換前進 / 後退。
+        若實車效果不對，只需校正 Effect ID。
+      </div>
+    </div>
+
+    <div id="nativeCtl" class="controls">
+      <label>原生速度 <span id="nativeSpeedText2" class="value">55</span></label>
+      <input id="nativeSpeed2" type="range" min="1" max="100" step="1" value="55">
+
+      <label>方向切換時間 <span id="nativeTravelText" class="value">3.0 秒</span></label>
+      <input id="nativeTravel" type="range" min="1" max="10" step="0.1" value="3.0">
+    </div>
+
+    <div class="note" style="margin-top:12px">
+      最後選擇的模式、顏色、速度與亮度會自動儲存。下次 Bluefy 自動連線完成後，直接恢復上次效果。
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>通訊紀錄</h3>
+    <div id="log" class="log"></div>
+  </div>
+</div>
+
+<script>
+const SERVICE_UUID='0000fff0-0000-1000-8000-00805f9b34fb';
+const WRITE_UUID='0000fff3-0000-1000-8000-00805f9b34fb';
+const FRAME_MS=30;
+
+let device=null, characteristic=null, reconnectTimer=null;
+let manualDisconnect=false, connecting=false;
+let running=false, rafId=null, modeTimer=null, writeBusy=false;
+let effectStart=0, lastSend=0, nativeDirection=0;
+let currentMode='breath';
+let restartTimer=null;
+
+const $=id=>document.getElementById(id);
+const logBox=$('log');
+
+function errText(e){
+  if(e===undefined)return'undefined';
+  if(e===null)return'null';
+  if(e?.message)return`${e.name||'Error'}: ${e.message}`;
+  try{return JSON.stringify(e)}catch{return String(e)}
+}
+function log(msg){
+  const t=new Date().toLocaleTimeString();
+  logBox.textContent+=`[${t}] ${msg}\n`;
+  logBox.scrollTop=logBox.scrollHeight;
+}
+function setStatus(text,on=false){
+  $('status').textContent=text;
+  $('dot').classList.toggle('on',on);
+}
+async function send(bytes,silent=false){
+  if(!characteristic)throw new Error('尚未連線');
+  const data=Uint8Array.from(bytes);
+  if(characteristic.properties.writeWithoutResponse&&characteristic.writeValueWithoutResponse){
+    await characteristic.writeValueWithoutResponse(data);
+  }else{
+    await characteristic.writeValue(data);
+  }
+  if(!silent){
+    log('TX '+[...data].map(x=>x.toString(16).padStart(2,'0').toUpperCase()).join(' '));
+  }
+}
+
+function rgbCmd(r,g,b){return[0x7E,0x07,0x05,0x03,r,g,b,0x10,0xEF]}
+function modeCmd(m){return[0x7E,0x05,0x03,m&255,0x06,0xFF,0xFF,0x00,0xEF]}
+function speedCmd(s){return[0x7E,0x04,0x02,s&255,0xFF,0xFF,0xFF,0x00,0xEF]}
+
+function hexRGB(h){
+  return{r:parseInt(h.slice(1,3),16),g:parseInt(h.slice(3,5),16),b:parseInt(h.slice(5,7),16)}
+}
+function mix(a,b,t){return a+(b-a)*t}
+function clamp255(v){return Math.max(0,Math.min(255,Math.round(v)))}
+function smooth01(x){return .5-.5*Math.cos(Math.PI*Math.max(0,Math.min(1,x)))}
+function tri(x){x=((x%1)+1)%1;return x<.5?x*2:(1-x)*2}
+function hsv(h,s=1,v=1){
+  h=((h%360)+360)%360;
+  let c=v*s,x=c*(1-Math.abs((h/60)%2-1)),m=v-c,r=0,g=0,b=0;
+  if(h<60)[r,g,b]=[c,x,0];
+  else if(h<120)[r,g,b]=[x,c,0];
+  else if(h<180)[r,g,b]=[0,c,x];
+  else if(h<240)[r,g,b]=[0,x,c];
+  else if(h<300)[r,g,b]=[x,0,c];
+  else[r,g,b]=[c,0,x];
+  return{r:(r+m)*255,g:(g+m)*255,b:(b+m)*255};
+}
+function seeded(n){
+  const x=Math.sin(n*12.9898+78.233)*43758.5453;
+  return x-Math.floor(x);
+}
+
+function save(){
+  const o={
+    mode:currentMode,
+    color1:$('color1').value,
+    color2:$('color2').value,
+    color3:$('color3').value,
+    period:$('period').value,
+    brightness:$('brightness').value,
+    runnerColor:$('runnerColor').value,
+    nativeSpeed:$('nativeSpeed').value,
+    travelTime:$('travelTime').value,
+    forwardId:$('forwardId').value,
+    backwardId:$('backwardId').value,
+    nativeSpeed2:$('nativeSpeed2').value,
+    nativeTravel:$('nativeTravel').value
+  };
+  localStorage.setItem('sentraV6',JSON.stringify(o));
+}
+
+function load(){
+  try{
+    const o=JSON.parse(localStorage.getItem('sentraV6')||'null');
+    if(!o)return;
+    currentMode=o.mode||currentMode;
+    ['color1','color2','color3','period','brightness','runnerColor','nativeSpeed','travelTime',
+     'forwardId','backwardId','nativeSpeed2','nativeTravel'].forEach(k=>{
+      if(o[k]!==undefined&&$(k))$(k).value=o[k];
+    });
+  }catch{}
+}
+
+function updateLabels(){
+  $('periodText').textContent=Number($('period').value).toFixed(1)+' 秒';
+  $('brightnessText').textContent=$('brightness').value+'%';
+  $('nativeSpeedText').textContent=$('nativeSpeed').value;
+  $('travelText').textContent=Number($('travelTime').value).toFixed(1)+' 秒';
+  $('nativeSpeedText2').textContent=$('nativeSpeed2').value;
+  $('nativeTravelText').textContent=Number($('nativeTravel').value).toFixed(1)+' 秒';
+}
+
+function updateUI(){
+  document.querySelectorAll('.modebtn').forEach(b=>b.classList.toggle('active',b.dataset.mode===currentMode));
+  const activeBtn=document.querySelector(`.modebtn[data-mode="${currentMode}"]`);
+  if(activeBtn){
+    const label=activeBtn.childNodes[0]?.textContent?.trim() || activeBtn.textContent.trim();
+    const nameEl=$('selectedModeName');
+    if(nameEl) nameEl.textContent=label;
+  }
+  document.querySelectorAll('.controls').forEach(x=>x.classList.remove('show'));
+  const show=id=>$(id).classList.add('show');
+
+  const oneColor=[
+    'breath','heartbeat','pulse','softBlink','strobe','doubleFlash','redAlert','candle',
+    'sparkle','night'
+  ];
+  const twoColor=['dual','colorBounce','ocean','sunset','cyber','police','fire','ice'];
+  const threeColor=['aurora','pastel','party'];
+
+  if(oneColor.includes(currentMode))show('commonColor');
+  if(twoColor.includes(currentMode)){show('commonColor');show('secondColor')}
+  if(threeColor.includes(currentMode)){show('commonColor');show('secondColor');show('thirdColor')}
+
+  if(!['runner','comet','curtain'].includes(currentMode)){
+    show('periodCtl');
+    show('brightnessCtl');
+  }
+  if(currentMode==='runner')show('runnerCtl');
+  if(['comet','curtain'].includes(currentMode))show('nativeCtl');
+
+  updateLabels();
+}
+
+async function finishGattConnect(dev,src='自動'){
+  if(connecting)return false;
+  connecting=true;
+  try{
+    device=dev;
+    manualDisconnect=false;
+    device.removeEventListener?.('gattserverdisconnected',onDisconnected);
+    device.addEventListener('gattserverdisconnected',onDisconnected);
+
+    setStatus(`${src}連線中：${device.name||'BLE'}`);
+
+    const server=device.gatt.connected?device.gatt:await device.gatt.connect();
+    const service=await server.getPrimaryService(SERVICE_UUID);
+    characteristic=await service.getCharacteristic(WRITE_UUID);
+
+    localStorage.setItem('sentraBLEDeviceId',device.id||'');
+    setStatus(`已連線：${device.name||'BLE'}`,true);
+    log('FFF0 / FFF3 已就緒；恢復上次模式：'+currentMode);
+
+    setTimeout(()=>startMode(),250);
+    return true;
+  }catch(e){
+    characteristic=null;
+    setStatus('GATT 連線失敗');
+    log('GATT ERROR: '+errText(e));
+    return false;
+  }finally{
+    connecting=false;
+  }
+}
+
+async function autoConnect(){
+  if(!navigator.bluetooth||typeof navigator.bluetooth.getDevices!=='function'){
+    setStatus('需首次手動授權');
+    return;
+  }
+  try{
+    const ds=await navigator.bluetooth.getDevices();
+    if(!ds.length){
+      setStatus('尚未授權，請手動連線');
+      return;
+    }
+    const id=localStorage.getItem('sentraBLEDeviceId');
+    const d=ds.find(x=>x.id===id)||ds.find(x=>(x.name||'').toUpperCase().includes('MELK'))||ds[0];
+    await finishGattConnect(d,'自動');
+  }catch(e){
+    log('AUTO ERROR: '+errText(e));
+  }
+}
+
+async function manualConnect(){
+  try{
+    const d=await navigator.bluetooth.requestDevice({
+      acceptAllDevices:true,
+      optionalServices:[SERVICE_UUID]
+    });
+    localStorage.setItem('sentraBLEDeviceId',d.id||'');
+    await finishGattConnect(d,'手動');
+  }catch(e){
+    log('MANUAL ERROR: '+errText(e));
+  }
+}
+
+function onDisconnected(){
+  stopMode(false);
+  characteristic=null;
+  setStatus('BLE 已中斷');
+  log('BLE 已中斷');
+  if(!manualDisconnect){
+    clearTimeout(reconnectTimer);
+    reconnectTimer=setTimeout(autoConnect,1400);
+  }
+}
+
+function disconnect(){
+  manualDisconnect=true;
+  clearTimeout(reconnectTimer);
+  stopMode(false);
+  if(device?.gatt?.connected)device.gatt.disconnect();
+  characteristic=null;
+  setStatus('已手動中斷');
+}
+
+function stopMode(logIt=true){
+  running=false;
+  if(rafId)cancelAnimationFrame(rafId);
+  rafId=null;
+  if(modeTimer)clearTimeout(modeTimer);
+  modeTimer=null;
+  writeBusy=false;
+  if(logIt)log('停止目前模式');
+}
+
+async function writeRGB(r,g,b){
+  if(writeBusy||!characteristic)return;
+  const maxB=Number($('brightness').value)/100;
+  writeBusy=true;
+  try{
+    await send(rgbCmd(clamp255(r*maxB),clamp255(g*maxB),clamp255(b*maxB)),true);
+  }catch(e){
+    log('RGB ERROR: '+errText(e));
+    stopMode(false);
+  }finally{
+    writeBusy=false;
+  }
+}
+
+function softwareFrame(now){
+  if(!running)return;
+  if(now-lastSend<FRAME_MS){
+    rafId=requestAnimationFrame(softwareFrame);
+    return;
+  }
+  lastSend=now;
+
+  const period=Math.max(.2,Number($('period').value))*1000;
+  const t=((now-effectStart)%period)/period;
+  const c1=hexRGB($('color1').value);
+  const c2=hexRGB($('color2').value);
+  const c3=hexRGB($('color3').value);
+
+  let r=0,g=0,b=0;
+
+  if(currentMode==='breath'){
+    let y=(1-Math.cos(t*2*Math.PI))/2;
+    y=Math.pow(y,.82);
+    if(t<.035||t>.965)y=0;
+    r=c1.r*y;g=c1.g*y;b=c1.b*y;
+  }
+
+  else if(currentMode==='dual'||currentMode==='colorBounce'){
+    const q=smooth01(tri(t));
+    r=mix(c1.r,c2.r,q);g=mix(c1.g,c2.g,q);b=mix(c1.b,c2.b,q);
+  }
+
+  else if(currentMode==='aurora'||currentMode==='pastel'){
+    const x=t*3,seg=Math.floor(x)%3,u=smooth01(x-Math.floor(x));
+    const arr=[c1,c2,c3,c1],a=arr[seg],z=arr[seg+1];
+    r=mix(a.r,z.r,u);g=mix(a.g,z.g,u);b=mix(a.b,z.b,u);
+    if(currentMode==='pastel'){
+      r=mix(r,255,.18);g=mix(g,255,.18);b=mix(b,255,.18);
+    }
+  }
+
+  else if(currentMode==='rainbow'){
+    const z=hsv(t*360,1,1);r=z.r;g=z.g;b=z.b;
+  }
+
+  else if(currentMode==='rainbowBreath'){
+    const z=hsv(t*360,1,1);
+    const y=.08+.92*((1-Math.cos(t*4*Math.PI))/2);
+    r=z.r*y;g=z.g*y;b=z.b*y;
+  }
+
+  else if(currentMode==='heartbeat'){
+    let y=0;
+    if(t<.14)y=Math.sin((t/.14)*Math.PI);
+    else if(t>.18&&t<.32)y=.78*Math.sin(((t-.18)/.14)*Math.PI);
+    r=c1.r*y;g=c1.g*y;b=c1.b*y;
+  }
+
+  else if(currentMode==='pulse'){
+    const y=t<.16?smooth01(t/.16):Math.pow(Math.max(0,1-(t-.16)/.84),2.2);
+    r=c1.r*y;g=c1.g*y;b=c1.b*y;
+  }
+
+  else if(currentMode==='softBlink'){
+    const y=smooth01(tri(t));
+    r=c1.r*y;g=c1.g*y;b=c1.b*y;
+  }
+
+  else if(currentMode==='strobe'){
+    const y=(t%0.2)<0.08?1:0;
+    r=c1.r*y;g=c1.g*y;b=c1.b*y;
+  }
+
+  else if(currentMode==='doubleFlash'){
+    let y=0;
+    if(t<.08)y=1;
+    else if(t>.13&&t<.21)y=.9;
+    r=c1.r*y;g=c1.g*y;b=c1.b*y;
+  }
+
+  else if(currentMode==='redAlert'){
+    const y=Math.pow((1-Math.cos(t*4*Math.PI))/2,1.4);
+    r=255*y;g=8*y;b=0;
+  }
+
+  else if(currentMode==='police'){
+    const block=Math.floor(t*8)%2;
+    if(block===0){r=255;g=0;b=0}else{r=0;g=55;b=255}
+  }
+
+  else if(currentMode==='sos'){
+    // 9 pulses across one cycle: ... --- ...
+    const marks=[
+      [0.00,.06],[.10,.16],[.20,.26],
+      [.34,.46],[.50,.62],[.66,.78],
+      [.84,.90],[.93,.99]
+    ];
+    let y=0;
+    for(const [a,z] of marks){if(t>=a&&t<z){y=1;break}}
+    r=255*y;g=255*y;b=255*y;
+  }
+
+  else if(currentMode==='candle'){
+    const y=Math.max(.18,Math.min(.68,
+      .42+.08*Math.sin(now/180)+.05*Math.sin(now/83)+.035*Math.sin(now/41)
+    ));
+    r=c1.r*y;g=c1.g*y;b=c1.b*y;
+  }
+
+  else if(currentMode==='fire'){
+    const bucket=Math.floor(now/90);
+    const n=seeded(bucket);
+    const y=.42+.5*n;
+    const warm={r:255,g:55+90*n,b:0};
+    r=warm.r*y;g=warm.g*y;b=0;
+  }
+
+  else if(currentMode==='ocean'){
+    const q=smooth01(tri(t));
+    r=mix(c1.r,c2.r,q)*(.62+.38*q);
+    g=mix(c1.g,c2.g,q)*(.62+.38*q);
+    b=mix(c1.b,c2.b,q)*(.72+.28*q);
+  }
+
+  else if(currentMode==='ice'){
+    const q=.75+.25*Math.sin(now/240)+.08*Math.sin(now/61);
+    r=mix(c1.r,c2.r,.55)*q;
+    g=mix(c1.g,c2.g,.55)*q;
+    b=mix(c1.b,c2.b,.55)*q;
+  }
+
+  else if(currentMode==='sunset'){
+    const q=smooth01(tri(t));
+    r=mix(c1.r,c2.r,q);g=mix(c1.g,c2.g,q);b=mix(c1.b,c2.b,q);
+  }
+
+  else if(currentMode==='cyber'){
+    const q=Math.pow(tri(t),.75);
+    r=mix(c1.r,c2.r,q);g=mix(c1.g,c2.g,q);b=mix(c1.b,c2.b,q);
+  }
+
+  else if(currentMode==='sparkle'){
+    const bucket=Math.floor(now/140);
+    const n=seeded(bucket);
+    const y=n>.72?.35+.65*n:.16+.18*n;
+    r=c1.r*y;g=c1.g*y;b=c1.b*y;
+  }
+
+  else if(currentMode==='disco'){
+    const bucket=Math.floor((now-effectStart)/260);
+    const h=(bucket*73)%360;
+    const z=hsv(h,1,1);
+    r=z.r;g=z.g;b=z.b;
+  }
+
+  else if(currentMode==='party'){
+    const beat=(1-Math.cos(t*10*Math.PI))/2;
+    const x=t*3,seg=Math.floor(x)%3,u=smooth01(x-Math.floor(x));
+    const arr=[c1,c2,c3,c1],a=arr[seg],z=arr[seg+1];
+    r=mix(a.r,z.r,u)*(.3+.7*beat);
+    g=mix(a.g,z.g,u)*(.3+.7*beat);
+    b=mix(a.b,z.b,u)*(.3+.7*beat);
+  }
+
+  else if(currentMode==='night'){
+    const y=.05+.30*((1-Math.cos(t*2*Math.PI))/2);
+    r=c1.r*y;g=c1.g*y;b=c1.b*y;
+  }
+
+  writeRGB(r,g,b);
+  rafId=requestAnimationFrame(softwareFrame);
+}
+
+const runnerIDs={
+  red:[108,109],green:[110,111],blue:[112,113],yellow:[114,115],
+  cyan:[116,117],violet:[118,119],white:[120,121]
+};
+
+async function nativeBounce(forward,back,speed,seconds){
+  if(!characteristic)return;
+  running=true;
+  nativeDirection=0;
+  await send(speedCmd(speed),true);
+
+  const tick=async()=>{
+    if(!running||!characteristic)return;
+    const id=nativeDirection===0?forward:back;
+    try{
+      await send(modeCmd(id),true);
+      log(`Native ${id} (${nativeDirection===0?'Forward':'Backward'})`);
+    }catch(e){
+      log('NATIVE ERROR: '+errText(e));
+      stopMode(false);
+      return;
+    }
+    nativeDirection=1-nativeDirection;
+    modeTimer=setTimeout(tick,seconds*1000);
+  };
+  tick();
+}
+
+function startMode(){
+  if(!characteristic)return;
+
+  stopMode(false);
+  save();
+  updateUI();
+  effectStart=performance.now();
+  lastSend=0;
+  running=true;
+  log('啟動模式：'+currentMode);
+
+  const softwareModes=[
+    'breath','dual','aurora','rainbow','rainbowBreath','colorBounce','pastel','night',
+    'heartbeat','pulse','softBlink','strobe','doubleFlash','redAlert','police','sos',
+    'candle','fire','ocean','ice','sunset','cyber','sparkle','disco','party'
+  ];
+
+  if(softwareModes.includes(currentMode)){
+    rafId=requestAnimationFrame(softwareFrame);
+    return;
+  }
+
+  if(currentMode==='runner'){
+    const pair=runnerIDs[$('runnerColor').value]||[118,119];
+    $('forwardId').value=pair[0];
+    $('backwardId').value=pair[1];
+    save();
+    nativeBounce(
+      Number($('forwardId').value),
+      Number($('backwardId').value),
+      Number($('nativeSpeed').value),
+      Number($('travelTime').value)
+    );
+    return;
+  }
+
+  if(currentMode==='comet'){
+    nativeBounce(23,24,Number($('nativeSpeed2').value),Number($('nativeTravel').value));
+    return;
+  }
+
+  if(currentMode==='curtain'){
+    nativeBounce(57,58,Number($('nativeSpeed2').value),Number($('nativeTravel').value));
+  }
+}
+
+function scheduleRestart(){
+  save();
+  updateLabels();
+  clearTimeout(restartTimer);
+  restartTimer=setTimeout(()=>{
+    if(characteristic)startMode();
+  },120);
+}
+
+document.querySelectorAll('.modebtn').forEach(b=>{
+  b.onclick=()=>{
+    currentMode=b.dataset.mode;
+    save();
+    updateUI();
+    if(characteristic)startMode();
+  };
+});
+
+['color1','color2','color3','period','brightness','nativeSpeed','travelTime',
+ 'forwardId','backwardId','nativeSpeed2','nativeTravel'].forEach(id=>{
+  $(id).addEventListener('input',scheduleRestart);
+});
+
+$('runnerColor').addEventListener('change',()=>{
+  const p=runnerIDs[$('runnerColor').value];
+  $('forwardId').value=p[0];
+  $('backwardId').value=p[1];
+  scheduleRestart();
+});
+
+$('connectBtn').onclick=manualConnect;
+$('disconnectBtn').onclick=disconnect;
+
+load();
+updateUI();
+updateLabels();
+
+setTimeout(()=>{
+  const active=document.querySelector('.modebtn.active');
+  if(active) active.scrollIntoView({block:'center',behavior:'smooth'});
+},180);
+
+log('V7 已載入；嘗試自動連線並恢復上次模式…');
+setTimeout(autoConnect,400);
+</script>
+</body>
+</html>
